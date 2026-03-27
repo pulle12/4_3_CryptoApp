@@ -1,6 +1,8 @@
 <?php
 
 namespace server\controllers;
+use Exception;
+
 abstract class RESTController
 {
     /**

@@ -1,6 +1,7 @@
 <?php
 
 namespace server\models;
+use JsonSerializable;
 
 require_once 'DatabaseObject.php';
 
