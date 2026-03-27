@@ -6,3 +6,11 @@ Aufbauend auf den Grundlagen des Datenbankzugriffs und Object-Relational-Mapping
 http://localhost/php43_angabe/server/api/purchase
 
 Teampartner: Pius Rauch (Pisus7)
+
+## Schritte zum parallelen Arbeiten
+In einem Ordner (ohne den konkreten Projektordner zu erstellen):
+```
+git clone https://github.com/pulle12/4_3_CryptoApp.git
+git checkout -b <branch-name>
+git push -u origin <branch-name>
+```
