@@ -38,7 +38,15 @@ class PurchaseRESTController extends RESTController
      */
     private function handleGETRequest()
     {
-        // TODO
+        if ($this->verb == null && sizeof($this->args) == 1) {
+            $model = Purchase::get($this->args[0]);
+            $this->response($model);
+        } else if ($this->verb == null && empty($this->args)) {
+            $model = Purchase::getAll();
+            $this->response($model);
+        } else {
+            $this->response("Bad request", 400);
+        }
     }
 
     /**

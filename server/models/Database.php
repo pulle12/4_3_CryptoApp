@@ -2,12 +2,15 @@
 
 namespace server\models;
 
+use PDO;
+use PDOException;
+
 class Database
 {
-    private static $dbName = 'php43_angabe';
-    private static $dbHost = 'mysql';
+    private static $dbName = '4_3_cryptoapp';
+    private static $dbHost = 'localhost';
     private static $dbUsername = 'root';
-    private static $dbUserPassword = '123';
+    private static $dbUserPassword = '';
 
     private static $conn = null;
 

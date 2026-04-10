@@ -2,6 +2,7 @@
 
 namespace server\models;
 use JsonSerializable;
+use PDO;
 
 require_once 'DatabaseObject.php';
 
@@ -77,7 +78,7 @@ class Purchase implements DatabaseObject, JsonSerializable
         $sql = "SELECT * FROM purchase WHERE id = ?";
         $stmt = $db->prepare($sql);
         $stmt->execute(array($id));
-        $item = $stmt->fetchObject('Purchase');  // ORM
+        $item = $stmt->fetchObject(self::class);  // ORM
         Database::disconnect();
         return $item !== false ? $item : null;
     }
@@ -94,7 +95,7 @@ class Purchase implements DatabaseObject, JsonSerializable
         $stmt->execute();
 
         // fetch all datasets (rows), convert to array of Purchase-objects (ORM)
-        $items = $stmt->fetchAll(PDO::FETCH_CLASS, 'Purchase');
+        $items = $stmt->fetchAll(PDO::FETCH_CLASS, self::class);
 
         Database::disconnect();
 
