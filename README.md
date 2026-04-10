@@ -12,5 +12,6 @@ In einem Ordner (ohne den konkreten Projektordner zu erstellen):
 ```
 git clone https://github.com/pulle12/4_3_CryptoApp.git
 git checkout -b <branch-name>
+(etwas im Code machen)
 git push -u origin <branch-name>
 ```
