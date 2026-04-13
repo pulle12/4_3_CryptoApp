@@ -2,28 +2,44 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8"/>
-    <title>TODO CryptoApp</title>
-    <!-- Import Styles -->
+    <title>CryptoApp</title>
+
     <link rel="stylesheet" href="assets/styles.css"/>
-    <!-- Import Vue.js -->
+
+    <!-- Vue 3 -->
     <script src="js/vue.global.js"></script>
+
+    <!-- Axios -->
     <script src="js/axios.min.js"></script>
 </head>
+
 <body>
+
 <div id="app">
-    <div class="nav-bar"><h3>TODO CryptoApp</h3></div>
-    <app-display :prices="prices" :purchases="purchases" @add-to-wallet="addPurchase"></app-display>
+    <div class="nav-bar">
+        <h2>CryptoApp</h2>
+    </div>
+
+    <!-- Kauf Formular -->
+    <purchase-form @add-to-wallet="addPurchase"></purchase-form>
+
+    <!-- Käufe anzeigen -->
+    <app-display
+            :purchases="purchases"
+            :prices="prices">
+    </app-display>
+
+    <!-- Wallets -->
+    <wallet-list :wallets="wallets"></wallet-list>
 </div>
 
-<!-- Import App -->
+<!-- Komponenten -->
+<script src="components/AppDisplay.js"></script>
+<script src="components/PurchaseForm.js"></script>
+<script src="components/WalletList.js"></script>
+
+<!-- Main -->
 <script src="main.js"></script>
 
-<!-- Import Components -->
-<script src="components/WalletDisplay.js"></script>
-
-<!-- Mount App -->
-<script>
-    const a = app.mount('#app')
-</script>
 </body>
 </html>
