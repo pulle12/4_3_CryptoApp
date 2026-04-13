@@ -16,3 +16,11 @@ const app = new Vue({
     }
 
 })
+
+$(document).ready(function () {
+    $.get('https://api.bitpanda.com/v1/ticker', function (data) {
+        $('#btc').text(data.BTC_EUR.last_price);
+        $('#eth').text(data.ETH_EUR.last_price);
+        $('#ltc').text(data.LTC_EUR.last_price);
+    })
+})
