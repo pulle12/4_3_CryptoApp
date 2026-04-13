@@ -9,11 +9,11 @@ require_once('models/Purchase.php');
 
 class PurchaseRESTController extends RESTController
 {
-    public function handleRequest()
+    public function handleRequest($arg1 = null, $arg2 = null)
     {
         switch ($this->method) {
             case 'GET':
-                $this->handleGETRequest();
+                $this->handleGETRequest($arg1, $arg2);
                 break;
             case 'POST':
                 $this->handlePOSTRequest();
@@ -36,17 +36,30 @@ class PurchaseRESTController extends RESTController
      * single purchase: GET api.php?r=purchase/25 -> args[0] = 25
      * all purchases group by currency: GET api.php?r=purchase/currency/BTC -> verb = currency, args[0] = BTC
      */
-    private function handleGETRequest()
+    private function handleGETRequest($arg1 = null, $arg2 = null)
     {
-        if ($this->verb == null && sizeof($this->args) == 1) {
-            $model = Purchase::get($this->args[0]);
-            $this->response($model);
-        } else if ($this->verb == null && empty($this->args)) {
-            $model = Purchase::getAll();
-            $this->response($model);
-        } else {
-            $this->response("Bad request", 400);
+        if ($arg1 === null || $arg1 === '') {
+            $this->response(Purchase::getAll());
+            return;
         }
+
+        if ($arg1 === 'currency') {
+            if ($arg2 === null || trim($arg2) === '') {
+                $this->response('Bad request: currency missing', 400);
+                return;
+            }
+
+            $this->response(Purchase::getAllGroupByCurrency($arg2));
+            return;
+        }
+
+        $model = Purchase::get((int)$arg1);
+        if ($model === null) {
+            $this->response('Not Found', 404);
+            return;
+        }
+
+        $this->response($model);
     }
 
     /**
@@ -72,7 +85,22 @@ class PurchaseRESTController extends RESTController
      */
     private function handlePUTRequest()
     {
-        // TODO
+        if ($this->verb == null && sizeof($this->args) == 1) {
+
+            $model = Purchase::get($this->args[0]);
+            $model->setDate($this->getDataOrNull('date'));
+            $model->setAmount($this->getDataOrNull('amount'));
+            $model->setPrice($this->getDataOrNull('price'));
+            $model->setCurrency($this->getDataOrNull('currency'));
+
+            if ($model->save()) {
+                $this->response("OK");
+            } else {
+                $this->response($model->getErrors(), 400);
+            }
+        } else {
+            $this->response("Not Found", 404);
+        }
     }
 
     /**

@@ -1,6 +1,7 @@
 <?php
 
 namespace server\models;
+use DateTime;
 use JsonSerializable;
 use PDO;
 
@@ -110,8 +111,21 @@ class Purchase implements DatabaseObject, JsonSerializable
      */
     public static function getAllGroupByCurrency($currency = '')
     {
-        // TODO
-        return [];
+        $currency = trim((string)$currency);
+
+        if ($currency === '') {
+            return [];
+        }
+
+        $db = Database::connect();
+        $sql = 'SELECT * FROM purchase WHERE UPPER(currency) = UPPER(?) ORDER BY date DESC';
+        $stmt = $db->prepare($sql);
+        $stmt->execute([$currency]);
+
+        $items = $stmt->fetchAll(PDO::FETCH_CLASS, self::class);
+        Database::disconnect();
+
+        return $items;
     }
 
     /**
