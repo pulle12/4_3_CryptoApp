@@ -2,14 +2,12 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>CryptoApp</title>
 
     <link rel="stylesheet" href="assets/styles.css"/>
 
-    <!-- Vue 3 -->
     <script src="js/vue.global.js"></script>
-
-    <!-- Axios -->
     <script src="js/axios.min.js"></script>
 </head>
 
@@ -17,29 +15,35 @@
 
 <div id="app">
     <div class="nav-bar">
-        <h2>CryptoApp</h2>
+        <h3>CryptoApp</h3>
     </div>
 
-    <!-- Kauf Formular -->
-    <purchase-form @add-to-wallet="addPurchase"></purchase-form>
+    <div class="app-frame">
+        <div class="wallet-container">
+            <purchase-form
+                    :currency-options="currencyOptions"
+                    :selected-currency="selectedCurrency"
+                    :amount="amount"
+                    :current-value="currentValue"
+                    @update:selected-currency="selectedCurrency = $event"
+                    @update:amount="amount = $event"
+                    @buy="buyCurrency"
+            ></purchase-form>
 
-    <!-- Käufe anzeigen -->
-    <app-display
-            :purchases="purchases"
-            :prices="prices">
-    </app-display>
-
-    <!-- Wallets -->
-    <wallet-list :wallets="wallets"></wallet-list>
+            <wallet-list
+                    :wallets="wallets"
+                    :total-value="totalWalletValue"
+                    :total-percent="totalWalletPercent"
+            ></wallet-list>
+        </div>
+    </div>
 </div>
 
 <!-- Komponenten -->
 <script src="components/AppDisplay.js"></script>
 <script src="components/PurchaseForm.js"></script>
 <script src="components/WalletList.js"></script>
-
-<!-- Main -->
-<script src="main.js"></script>
+<script src="js/main.js"></script>
 
 </body>
 </html>
