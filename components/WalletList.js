@@ -18,7 +18,13 @@ window.WalletList = {
             return `${Number(value).toFixed(2)}\u20AC`;
         },
         formatPercent(value) {
-            return `${Number(value).toFixed(1)}%`;
+            const numeric = Number(value);
+            if (!Number.isFinite(numeric)) {
+                return "0.0%";
+            }
+
+            const prefix = numeric > 0 ? "+" : "";
+            return `${prefix}${numeric.toFixed(1)}%`;
         }
     },
     template: /*html*/ `

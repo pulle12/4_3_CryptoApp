@@ -30,9 +30,9 @@ window.PurchaseForm = {
     },
     template: /*html*/ `
         <div class="wallet-form">
-            <h2>Kryptowaehrung kaufen</h2>
+            <h2>Kryptowährung kaufen</h2>
 
-            <label for="currency-select">Kryptowaehrung:</label>
+            <label for="currency-select">Kryptowährung:</label>
             <select
                 id="currency-select"
                 :value="selectedCurrency"
