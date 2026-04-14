@@ -2,24 +2,32 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8"/>
-    <title>TODO CryptoApp</title>
+    <title>CryptoApp</title>
     <!-- Import Styles -->
     <link rel="stylesheet" href="assets/styles.css"/>
     <!-- Import Vue.js -->
     <script src="js/vue.global.js"></script>
     <script src="js/axios.min.js"></script>
+    <script src="js/vue.js"></script>
+    <script src="js/jquery.min.js"></script>
 </head>
 <body>
 <div id="app">
-    <div class="nav-bar"><h3>TODO CryptoApp</h3></div>
+    <div class="nav-bar"><h3>CryptoApp</h3></div>
     <app-display :prices="prices" :purchases="purchases" @add-to-wallet="addPurchase"></app-display>
+    <h1>Krypto-Preise (EUR)</h1>
+    <p>Bitcoin: <span id="btc">Lädt...</span> €</p>
+    <p>Ethereum: <span id="eth">Lädt...</span> €</p>
+    <p>Litecoin: <span id="ltc">Lädt...</span> €</p>
 </div>
 
 <!-- Import App -->
 <script src="main.js"></script>
 
 <!-- Import Components -->
-<script src="components/WalletDisplay.js"></script>
+<script src="components/AppDisplay.js"></script>
+<script src="components/PurchaseForm.js"></script>
+<script src="components/WalletList.js"></script>
 
 <!-- Mount App -->
 <script>
