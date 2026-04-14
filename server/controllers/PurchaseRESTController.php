@@ -9,11 +9,11 @@ require_once('models/Purchase.php');
 
 class PurchaseRESTController extends RESTController
 {
-    public function handleRequest()
+    public function handleRequest($arg1 = null, $arg2 = null)
     {
         switch ($this->method) {
             case 'GET':
-                $this->handleGETRequest();
+                $this->handleGETRequest($arg1, $arg2);
                 break;
             case 'POST':
                 $this->handlePOSTRequest();
@@ -36,9 +36,25 @@ class PurchaseRESTController extends RESTController
      * single purchase: GET api.php?r=purchase/25 -> args[0] = 25
      * all purchases group by currency: GET api.php?r=purchase/currency/BTC -> verb = currency, args[0] = BTC
      */
-    private function handleGETRequest()
+    private function handleGETRequest($arg1 = null, $arg2 = null)
     {
-        // TODO
+        if ($arg1 === null || $arg1 === '') {
+            $this->response(Purchase::getAll());
+            return;
+        }
+
+        if ($arg1 === 'currency') {
+            $this->response(Purchase::getAllGroupByCurrency($arg2));
+            return;
+        }
+
+        $model = Purchase::get((int)$arg1);
+        if ($model === null) {
+            $this->response('Not Found', 404);
+            return;
+        }
+
+        $this->response($model);
     }
 
     /**
@@ -64,7 +80,33 @@ class PurchaseRESTController extends RESTController
      */
     private function handlePUTRequest()
     {
-        // TODO
+        if ($this->verb == null && sizeof($this->args) == 1) {
+            $id = $this->args[0];
+
+            if (!is_numeric($id) || (int)$id <= 0) {
+                $this->response("Bad Request", 400);
+                return;
+            }
+
+            $model = Purchase::get((int)$id);
+            if ($model === null) {
+                $this->response("Not Found", 404);
+                return;
+            }
+
+            $model->setDate($this->getDataOrNull('date'));
+            $model->setAmount($this->getDataOrNull('amount'));
+            $model->setPrice($this->getDataOrNull('price'));
+            $model->setCurrency($this->getDataOrNull('currency'));
+
+            if ($model->save()) {
+                $this->response("OK");
+            } else {
+                $this->response($model->getErrors(), 400);
+            }
+        } else {
+            $this->response("Not Found", 404);
+        }
     }
 
     /**
@@ -73,7 +115,20 @@ class PurchaseRESTController extends RESTController
     private function handleDELETERequest()
     {
         if ($this->verb == null && sizeof($this->args) == 1) {
-            Purchase::delete($this->args[0]);
+            $id = $this->args[0];
+
+            if (!is_numeric($id) || (int)$id <= 0) {
+                $this->response("Bad Request", 400);
+                return;
+            }
+
+            $model = Purchase::get((int)$id);
+            if ($model === null) {
+                $this->response("Not Found", 404);
+                return;
+            }
+
+            Purchase::delete((int)$id);
             $this->response("OK", 200);
         } else {
             $this->response("Not Found", 404);

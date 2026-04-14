@@ -152,3 +152,27 @@ app.component("purchase-form", window.PurchaseForm);
 app.component("wallet-list", window.WalletList);
 
 app.mount("#app");
+
+$(document).ready(function () {
+    function getCryptoPrices() {
+        $.ajax({
+            url: 'https://api.bitpanda.com/v1/ticker',
+            method: 'GET',
+            success: function (data) {
+                console.log("Daten empfangen:", data);
+
+                if (data.BTC) $('#btc').text(data.BTC.EUR);
+                if (data.ETH) $('#eth').text(data.ETH.EUR);
+                if (data.LTC) $('#ltc').text(data.LTC.EUR);
+            },
+            error: function (xhr) {
+                console.error("Fehler:", xhr.statusText);
+                $('#btc').text("Fehler beim Laden");
+            }
+        });
+    }
+
+    getCryptoPrices();
+
+    setInterval(getCryptoPrices, 30000);
+});

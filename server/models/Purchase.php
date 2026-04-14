@@ -1,7 +1,9 @@
 <?php
 
 namespace server\models;
+use DateTime;
 use JsonSerializable;
+use PDO;
 
 require_once 'DatabaseObject.php';
 
@@ -77,7 +79,7 @@ class Purchase implements DatabaseObject, JsonSerializable
         $sql = "SELECT * FROM purchase WHERE id = ?";
         $stmt = $db->prepare($sql);
         $stmt->execute(array($id));
-        $item = $stmt->fetchObject('Purchase');  // ORM
+        $item = $stmt->fetchObject(self::class);  // ORM
         Database::disconnect();
         return $item !== false ? $item : null;
     }
@@ -94,7 +96,7 @@ class Purchase implements DatabaseObject, JsonSerializable
         $stmt->execute();
 
         // fetch all datasets (rows), convert to array of Purchase-objects (ORM)
-        $items = $stmt->fetchAll(PDO::FETCH_CLASS, 'Purchase');
+        $items = $stmt->fetchAll(PDO::FETCH_CLASS, self::class);
 
         Database::disconnect();
 
@@ -109,8 +111,29 @@ class Purchase implements DatabaseObject, JsonSerializable
      */
     public static function getAllGroupByCurrency($currency = '')
     {
-        // TODO
-        return [];
+        $currency = trim((string)$currency);
+        $db = Database::connect();
+
+        if ($currency === '') {
+            $sql = 'SELECT currency, SUM(amount) AS amount, SUM(amount * price) AS price FROM purchase GROUP BY currency ORDER BY currency ASC';
+            $stmt = $db->prepare($sql);
+            $stmt->execute();
+        } else {
+            $sql = 'SELECT currency, SUM(amount) AS amount, SUM(amount * price) AS price FROM purchase WHERE UPPER(currency) = UPPER(?) GROUP BY currency ORDER BY currency ASC';
+            $stmt = $db->prepare($sql);
+            $stmt->execute([$currency]);
+        }
+
+        $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        Database::disconnect();
+
+        return array_map(function ($item) {
+            return [
+                'currency' => $item['currency'],
+                'amount' => (double)$item['amount'],
+                'price' => (double)$item['price'],
+            ];
+        }, $items);
     }
 
     /**
