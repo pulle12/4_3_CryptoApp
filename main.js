@@ -1,4 +1,4 @@
-const app = new Vue({
+/* const app = new Vue({
     el: '#app',
     data: {
         credentials: []
@@ -15,12 +15,29 @@ const app = new Vue({
             .then(data => (this.credentials = data))
     }
 
-})
+}) */
 
 $(document).ready(function () {
-    $.get('https://api.bitpanda.com/v1/ticker', function (data) {
-        $('#btc').text(data.BTC_EUR.last_price);
-        $('#eth').text(data.ETH_EUR.last_price);
-        $('#ltc').text(data.LTC_EUR.last_price);
-    })
-})
+    function getCryptoPrices() {
+        $.ajax({
+            url: 'https://api.bitpanda.com/v1/ticker',
+            method: 'GET',
+            success: function (data) {
+                console.log("Daten empfangen:", data);
+
+                if (data.BTC) $('#btc').text(data.BTC.EUR);
+                if (data.ETH) $('#eth').text(data.ETH.EUR);
+                if (data.LTC) $('#ltc').text(data.LTC.EUR);
+            },
+            error: function (xhr) {
+                console.error("Fehler:", xhr.statusText);
+                $('#btc').text("Fehler beim Laden");
+            }
+        });
+    }
+
+    getCryptoPrices();
+
+    setInterval(getCryptoPrices, 30000);
+});
+
