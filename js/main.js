@@ -11,25 +11,10 @@ const app = Vue.createApp({
 
     computed: {
         currencyOptions() {
-            const apiOptions = Object.keys(this.prices)
-                .filter((key) => key.toUpperCase().endsWith("_EUR"))
-                .map((key) => {
-                    const symbol = key.toUpperCase().replace("_EUR", "");
-                    return {
-                        symbol,
-                        price: this.parsePrice(this.prices[key])
-                    };
-                })
-                .filter((item) => this.fallbackCurrencies.includes(item.symbol));
-
-            if (apiOptions.length > 0) {
-                return apiOptions.sort((a, b) => a.symbol.localeCompare(b.symbol));
-            }
-
             return this.fallbackCurrencies.map((symbol) => ({
                 symbol,
                 price: this.getTickerPrice(symbol)
-            }));
+            })).sort((a, b) => a.symbol.localeCompare(b.symbol));
         },
 
         selectedPrice() {
@@ -97,14 +82,23 @@ const app = Vue.createApp({
 
     methods: {
         getTickerPrice(symbol) {
-            const upperKey = `${String(symbol).toUpperCase()}_EUR`;
-            const lowerKey = `${String(symbol).toLowerCase()}_eur`;
+            const upperSymbol = String(symbol).toUpperCase();
+            const lowerSymbol = String(symbol).toLowerCase();
+            const upperKey = `${upperSymbol}_EUR`;
+            const lowerKey = `${lowerSymbol}_eur`;
 
-            return this.parsePrice(this.prices[upperKey] ?? this.prices[lowerKey]);
+            const direct = this.prices[upperSymbol] ?? this.prices[lowerSymbol] ?? this.prices[upperKey] ?? this.prices[lowerKey];
+
+            if (direct && typeof direct === "object" && direct.EUR !== undefined) {
+                return this.parsePrice(direct.EUR);
+            }
+
+            return this.parsePrice(direct);
         },
 
         parsePrice(value) {
-            const parsed = Number(value);
+            const normalized = typeof value === "string" ? value.replace(",", ".") : value;
+            const parsed = Number(normalized);
             return Number.isFinite(parsed) ? parsed : 0;
         },
 

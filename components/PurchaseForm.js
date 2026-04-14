@@ -21,6 +21,11 @@ window.PurchaseForm = {
     methods: {
         formatEUR(value) {
             return `${Number(value).toFixed(2)}\u20AC`;
+        },
+        parseAmountInput(rawValue) {
+            const normalized = String(rawValue).replace(",", ".");
+            const parsed = Number(normalized);
+            return Number.isFinite(parsed) ? parsed : 0;
         }
     },
     template: /*html*/ `
@@ -49,7 +54,7 @@ window.PurchaseForm = {
                 min="0"
                 step="0.001"
                 :value="amount"
-                @input="$emit('update:amount', Number($event.target.value))"
+                @input="$emit('update:amount', parseAmountInput($event.target.value))"
             />
 
             <p class="current-value">Wert: {{ formatEUR(currentValue) }}</p>
