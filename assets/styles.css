@@ -20,7 +20,7 @@ body {
   margin: 0;
   padding-top: 14px;
   padding-left: 16px;
-  font-size: 40px;
+  font-size: 36px;
 }
 
 .app-frame {
@@ -37,26 +37,30 @@ body {
   justify-content: center;
   align-items: flex-start;
   gap: 60px;
+  max-width: 1240px;
+  margin: 0 auto;
 }
 
 .wallet-form,
 .wallet-list {
   display: flex;
-  width: 500px;
+  flex: 1;
+  max-width: 540px;
+  min-width: 360px;
   flex-direction: column;
   padding: 36px 28px;
   border: 2px solid #d8d8d8;
   background-color: #ffffff;
-  min-height: 540px;
+  min-height: 500px;
 }
 
 h2 {
-  font-size: 46px;
+  font-size: 34px;
   margin: 0 0 30px;
 }
 
 label {
-  font-size: 36px;
+  font-size: 28px;
   margin-bottom: 8px;
   margin-top: 4px;
 }
@@ -64,15 +68,15 @@ label {
 input,
 select {
   width: 100%;
-  height: 52px;
+  height: 48px;
   margin-bottom: 20px;
-  font-size: 34px;
+  font-size: 28px;
   border: 1px solid #bfc5cc;
   padding: 6px 10px;
 }
 
 .current-value {
-  font-size: 40px;
+  font-size: 32px;
   margin-top: 10px;
 }
 
@@ -81,9 +85,9 @@ select {
   background: linear-gradient(#4a5f77, #33485e);
   border: 1px solid #2f3f52;
   border-radius: 4px;
-  font-size: 34px;
+  font-size: 28px;
   width: 170px;
-  height: 70px;
+  height: 64px;
   color: #ffffff;
   box-shadow: inset 0 -0.45em 0.7em -0.35em rgba(0, 0, 0, 0.18),
     inset 0 0.4em 1.2em -0.3em rgba(255, 255, 255, 0.12);
@@ -98,7 +102,7 @@ select {
 }
 
 .wallet-list li {
-  font-size: 35px;
+  font-size: 28px;
   margin-bottom: 24px;
 }
 
@@ -109,7 +113,7 @@ select {
 
   .wallet-form,
   .wallet-list {
-    width: 46%;
+    min-width: 0;
     min-height: 460px;
   }
 }
@@ -133,7 +137,7 @@ select {
   }
 
   h2 {
-    font-size: 34px;
+    font-size: 28px;
   }
 
   label,
@@ -142,7 +146,7 @@ select {
   .wallet-list li,
   .button,
   .current-value {
-    font-size: 24px;
+    font-size: 22px;
   }
 
   input,
