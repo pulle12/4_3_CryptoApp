@@ -11,23 +11,29 @@ const app = Vue.createApp({
 
     computed: {
         currencyOptions() {
-            const source = Object.keys(this.prices).length > 0
-                ? Object.keys(this.prices)
-                        .filter((key) => key.endsWith("_EUR"))
-                        .map((key) => ({
-                            symbol: key.replace("_EUR", ""),
-                            price: this.parsePrice(this.prices[key])
-                        }))
-                : this.fallbackCurrencies.map((symbol) => ({ symbol, price: 0 }));
+            const apiOptions = Object.keys(this.prices)
+                .filter((key) => key.toUpperCase().endsWith("_EUR"))
+                .map((key) => {
+                    const symbol = key.toUpperCase().replace("_EUR", "");
+                    return {
+                        symbol,
+                        price: this.parsePrice(this.prices[key])
+                    };
+                })
+                .filter((item) => this.fallbackCurrencies.includes(item.symbol));
 
-            return source
-                .filter((item) => this.fallbackCurrencies.includes(item.symbol))
-                .sort((a, b) => a.symbol.localeCompare(b.symbol));
+            if (apiOptions.length > 0) {
+                return apiOptions.sort((a, b) => a.symbol.localeCompare(b.symbol));
+            }
+
+            return this.fallbackCurrencies.map((symbol) => ({
+                symbol,
+                price: this.getTickerPrice(symbol)
+            }));
         },
 
         selectedPrice() {
-            const tickerKey = `${this.selectedCurrency}_EUR`;
-            return this.parsePrice(this.prices[tickerKey]);
+            return this.getTickerPrice(this.selectedCurrency);
         },
 
         currentValue() {
@@ -52,7 +58,7 @@ const app = Vue.createApp({
 
             return Object.values(grouped)
                 .map((wallet) => {
-                    const currentPrice = this.parsePrice(this.prices[`${wallet.symbol}_EUR`]);
+                    const currentPrice = this.getTickerPrice(wallet.symbol);
                     const value = wallet.amount * currentPrice;
                     const percent = wallet.invested > 0 ? ((value - wallet.invested) / wallet.invested) * 100 : 0;
 
@@ -90,6 +96,13 @@ const app = Vue.createApp({
     },
 
     methods: {
+        getTickerPrice(symbol) {
+            const upperKey = `${String(symbol).toUpperCase()}_EUR`;
+            const lowerKey = `${String(symbol).toLowerCase()}_eur`;
+
+            return this.parsePrice(this.prices[upperKey] ?? this.prices[lowerKey]);
+        },
+
         parsePrice(value) {
             const parsed = Number(value);
             return Number.isFinite(parsed) ? parsed : 0;
@@ -103,7 +116,7 @@ const app = Vue.createApp({
 
         loadPurchases() {
             axios
-                .get("server/api/purchase")
+                .get("server/api.php?r=purchase")
                 .then((res) => {
                     this.purchases = Array.isArray(res.data) ? res.data : [];
                 })
@@ -136,7 +149,7 @@ const app = Vue.createApp({
             };
 
             axios
-                .post("server/api/purchase", payload)
+                .post("server/api.php?r=purchase", payload)
                 .then(() => {
                     this.loadPurchases();
                 })
@@ -152,27 +165,3 @@ app.component("purchase-form", window.PurchaseForm);
 app.component("wallet-list", window.WalletList);
 
 app.mount("#app");
-
-$(document).ready(function () {
-    function getCryptoPrices() {
-        $.ajax({
-            url: 'https://api.bitpanda.com/v1/ticker',
-            method: 'GET',
-            success: function (data) {
-                console.log("Daten empfangen:", data);
-
-                if (data.BTC) $('#btc').text(data.BTC.EUR);
-                if (data.ETH) $('#eth').text(data.ETH.EUR);
-                if (data.LTC) $('#ltc').text(data.LTC.EUR);
-            },
-            error: function (xhr) {
-                console.error("Fehler:", xhr.statusText);
-                $('#btc').text("Fehler beim Laden");
-            }
-        });
-    }
-
-    getCryptoPrices();
-
-    setInterval(getCryptoPrices, 30000);
-});
