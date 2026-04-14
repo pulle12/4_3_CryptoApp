@@ -81,8 +81,19 @@ class PurchaseRESTController extends RESTController
     private function handlePUTRequest()
     {
         if ($this->verb == null && sizeof($this->args) == 1) {
+            $id = $this->args[0];
 
-            $model = Purchase::get($this->args[0]);
+            if (!is_numeric($id) || (int)$id <= 0) {
+                $this->response("Bad Request", 400);
+                return;
+            }
+
+            $model = Purchase::get((int)$id);
+            if ($model === null) {
+                $this->response("Not Found", 404);
+                return;
+            }
+
             $model->setDate($this->getDataOrNull('date'));
             $model->setAmount($this->getDataOrNull('amount'));
             $model->setPrice($this->getDataOrNull('price'));
@@ -104,7 +115,20 @@ class PurchaseRESTController extends RESTController
     private function handleDELETERequest()
     {
         if ($this->verb == null && sizeof($this->args) == 1) {
-            Purchase::delete($this->args[0]);
+            $id = $this->args[0];
+
+            if (!is_numeric($id) || (int)$id <= 0) {
+                $this->response("Bad Request", 400);
+                return;
+            }
+
+            $model = Purchase::get((int)$id);
+            if ($model === null) {
+                $this->response("Not Found", 404);
+                return;
+            }
+
+            Purchase::delete((int)$id);
             $this->response("OK", 200);
         } else {
             $this->response("Not Found", 404);
