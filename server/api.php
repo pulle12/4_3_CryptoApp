@@ -11,7 +11,7 @@ require_once('controllers/RESTController.php');
 // select route: purchase/25 -> controller=purchase, action=GET, id=25
 $route = isset($_GET['r']) ? explode('/', trim($_GET['r'], '/')) : ['purchase'];
 $controller = sizeof($route) > 0 ? $route[0] : 'purchase';
-$arg1 = $route[1] ?? null; // z.B. "currency" oder eine ID
+$arg1 = $route[1] ?? null; // "currency"
 $arg2 = $route[2] ?? null; // z.B. "BTC"
 
 if ($controller == 'purchase') {

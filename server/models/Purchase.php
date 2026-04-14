@@ -112,20 +112,28 @@ class Purchase implements DatabaseObject, JsonSerializable
     public static function getAllGroupByCurrency($currency = '')
     {
         $currency = trim((string)$currency);
+        $db = Database::connect();
 
         if ($currency === '') {
-            return [];
+            $sql = 'SELECT currency, SUM(amount) AS amount, SUM(amount * price) AS price FROM purchase GROUP BY currency ORDER BY currency ASC';
+            $stmt = $db->prepare($sql);
+            $stmt->execute();
+        } else {
+            $sql = 'SELECT currency, SUM(amount) AS amount, SUM(amount * price) AS price FROM purchase WHERE UPPER(currency) = UPPER(?) GROUP BY currency ORDER BY currency ASC';
+            $stmt = $db->prepare($sql);
+            $stmt->execute([$currency]);
         }
 
-        $db = Database::connect();
-        $sql = 'SELECT * FROM purchase WHERE UPPER(currency) = UPPER(?) ORDER BY date DESC';
-        $stmt = $db->prepare($sql);
-        $stmt->execute([$currency]);
-
-        $items = $stmt->fetchAll(PDO::FETCH_CLASS, self::class);
+        $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
         Database::disconnect();
 
-        return $items;
+        return array_map(function ($item) {
+            return [
+                'currency' => $item['currency'],
+                'amount' => (double)$item['amount'],
+                'price' => (double)$item['price'],
+            ];
+        }, $items);
     }
 
     /**

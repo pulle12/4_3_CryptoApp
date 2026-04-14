@@ -44,11 +44,6 @@ class PurchaseRESTController extends RESTController
         }
 
         if ($arg1 === 'currency') {
-            if ($arg2 === null || trim($arg2) === '') {
-                $this->response('Bad request: currency missing', 400);
-                return;
-            }
-
             $this->response(Purchase::getAllGroupByCurrency($arg2));
             return;
         }
