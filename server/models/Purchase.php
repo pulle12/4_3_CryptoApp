@@ -198,9 +198,9 @@ class Purchase implements DatabaseObject, JsonSerializable
 
     /**
      * define attributes which are part of the json output
-     * @return array|mixed
+     * @return array
      */
-    public function jsonSerialize(): mixed
+    public function jsonSerialize(): array
     {
         return [
             "id" => intval($this->id),
