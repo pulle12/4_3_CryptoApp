@@ -17,7 +17,7 @@ window.PurchaseForm = {
             required: true
         }
     },
-    emits: ["update:selected-currency", "update:amount", "buy"],
+    emits: ["update:selected-currency", "update:amount", "buy", "sell"],
     methods: {
         formatEUR(value) {
             return `${Number(value).toFixed(2)}\u20AC`;
@@ -60,6 +60,7 @@ window.PurchaseForm = {
             <p class="current-value">Wert: {{ formatEUR(currentValue) }}</p>
 
             <button class="button" @click="$emit('buy')">Kaufen</button>
+            <button class="button" @click="$emit('sell')">Verkaufen</button>
         </div>
     `
 };

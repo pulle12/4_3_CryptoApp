@@ -3,7 +3,7 @@ const app = Vue.createApp({
         return {
             purchases: [],
             prices: {},
-            selectedCurrency: "BTC",
+            selectedCurrency: "ADA",
             amount: 0.02,
             fallbackCurrencies: ["BTC", "ETH", "XRP", "SOL", "ADA", "DOGE", "BNB"]
         };
@@ -72,6 +72,11 @@ const app = Vue.createApp({
             }
 
             return ((this.totalWalletValue - this.totalInvested) / this.totalInvested) * 100;
+        },
+
+        selectedWalletAmount() {
+            const wallet = this.wallets.find((entry) => entry.symbol === this.selectedCurrency);
+            return wallet ? wallet.amount : 0;
         }
     },
 
@@ -144,6 +149,32 @@ const app = Vue.createApp({
 
             axios
                 .post("server/api.php?r=purchase", payload)
+                .then(() => {
+                    this.loadPurchases();
+                })
+                .catch(() => {
+                    // Fehler bewusst still halten, UI bleibt bedienbar.
+                });
+        },
+
+        sellCurrency() {
+            if (this.amount <= 0 || this.selectedPrice <= 0) {
+                return;
+            }
+
+            if (this.amount > this.selectedWalletAmount) {
+                return;
+            }
+
+            const payload = {
+                date: this.formatDateForApi(new Date()),
+                amount: this.amount,
+                price: this.selectedPrice,
+                currency: this.selectedCurrency
+            };
+
+            axios
+                .post("server/api.php?r=purchase/sell", payload)
                 .then(() => {
                     this.loadPurchases();
                 })

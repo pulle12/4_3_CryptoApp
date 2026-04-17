@@ -14,6 +14,7 @@ class Purchase implements DatabaseObject, JsonSerializable
     private $currency;
     private $amount;
     private $price;
+    private $isSell = false;
 
     private $errors = [];
 
@@ -162,13 +163,24 @@ class Purchase implements DatabaseObject, JsonSerializable
 
     private function validateAmount()
     {
-        if (!is_numeric($this->amount) || $this->amount <= 0) {
-            $this->errors['amount'] = "Menge ungueltig";
+        if (!is_numeric($this->amount) || $this->amount == 0) {
+            $this->errors['amount'] = $this->isSell ? "Menge fuer Verkauf ungueltig" : "Menge ungueltig";
             return false;
-        } else {
-            unset($this->errors['amount']);
-            return true;
         }
+
+        if ($this->isSell) {
+            if ($this->amount > 0) {
+                $this->amount = -abs($this->amount);
+            }
+        } else {
+            if ($this->amount <= 0) {
+                $this->errors['amount'] = "Menge ungueltig";
+                return false;
+            }
+        }
+
+        unset($this->errors['amount']);
+        return true;
     }
 
     private function validatePrice()
@@ -209,6 +221,11 @@ class Purchase implements DatabaseObject, JsonSerializable
             "amount" => doubleval($this->amount),
             "price" => doubleval($this->price),
         ];
+    }
+
+    public function setIsSell($isSell)
+    {
+        $this->isSell = (bool)$isSell;
     }
 
     /**

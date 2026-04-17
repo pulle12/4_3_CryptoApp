@@ -16,7 +16,7 @@ class PurchaseRESTController extends RESTController
                 $this->handleGETRequest($arg1, $arg2);
                 break;
             case 'POST':
-                $this->handlePOSTRequest();
+                $this->handlePOSTRequest($arg1, $arg2);
                 break;
             case 'PUT':
                 $this->handlePUTRequest();
@@ -59,14 +59,17 @@ class PurchaseRESTController extends RESTController
 
     /**
      * create purchase: POST api.php?r=purchase
+     * sell purchase: POST api.php?r=purchase/sell
      */
-    private function handlePOSTRequest()
+    private function handlePOSTRequest($arg1 = null, $arg2 = null)
     {
+        $isSell = $arg1 === 'sell';
         $model = new Purchase();
         $model->setDate($this->getDataOrNull('date'));
         $model->setAmount($this->getDataOrNull('amount'));
         $model->setPrice($this->getDataOrNull('price'));
         $model->setCurrency($this->getDataOrNull('currency'));
+        $model->setIsSell($isSell);
 
         if ($model->save()) {
             $this->response("OK", 201);
