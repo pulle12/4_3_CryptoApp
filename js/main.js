@@ -1,9 +1,10 @@
 const app = Vue.createApp({
     data() {
         return {
-            purchases: [],
+            walletsData: [],
             prices: {},
             selectedCurrency: "ADA",
+            selectedWallet: "",
             amount: 0.02,
             fallbackCurrencies: ["BTC", "ETH", "XRP", "SOL", "ADA", "DOGE", "BNB"]
         };
@@ -25,64 +26,62 @@ const app = Vue.createApp({
             return this.amount * this.selectedPrice;
         },
 
+        walletOptions() {
+            return this.walletsData.map((wallet) => {
+                const currency = String(wallet.currency || "").toUpperCase();
+                const currentPrice = this.getTickerPrice(currency);
+                const amount = Number(wallet.amount || 0);
+                const value = amount * currentPrice;
+                return {
+                    id: Number(wallet.id),
+                    symbol: currency,
+                    name: wallet.name || "",
+                    currency: currency,
+                    amount: amount,
+                    value: value
+                };
+            }).filter((wallet) => wallet.currency);
+        },
+
         wallets() {
-            const grouped = {};
-
-            this.purchases.forEach((purchase) => {
-                if (!grouped[purchase.currency]) {
-                    grouped[purchase.currency] = {
-                        symbol: purchase.currency,
-                        amount: 0,
-                        invested: 0
-                    };
-                }
-
-                grouped[purchase.currency].amount += Number(purchase.amount);
-                grouped[purchase.currency].invested += Number(purchase.amount) * Number(purchase.price);
+            return this.walletOptions.map((wallet) => {
+                const currentPrice = this.getTickerPrice(wallet.currency);
+                const amount = Number(wallet.amount || 0);
+                const value = amount * currentPrice;
+                return {
+                    symbol: wallet.currency,
+                    amount: amount,
+                    invested: 0,
+                    value: value,
+                    percent: 0,
+                    name: wallet.name
+                };
             });
-
-            return Object.values(grouped)
-                .map((wallet) => {
-                    const currentPrice = this.getTickerPrice(wallet.symbol);
-                    const value = wallet.amount * currentPrice;
-                    const percent = wallet.invested > 0 ? ((value - wallet.invested) / wallet.invested) * 100 : 0;
-
-                    return {
-                        symbol: wallet.symbol,
-                        amount: wallet.amount,
-                        invested: wallet.invested,
-                        value,
-                        percent
-                    };
-                })
-                .sort((a, b) => b.value - a.value);
         },
 
         totalWalletValue() {
             return this.wallets.reduce((sum, wallet) => sum + wallet.value, 0);
         },
 
-        totalInvested() {
-            return this.wallets.reduce((sum, wallet) => sum + wallet.invested, 0);
-        },
-
         totalWalletPercent() {
-            if (this.totalInvested <= 0) {
-                return 0;
-            }
-
-            return ((this.totalWalletValue - this.totalInvested) / this.totalInvested) * 100;
-        },
-
-        selectedWalletAmount() {
-            const wallet = this.wallets.find((entry) => entry.symbol === this.selectedCurrency);
-            return wallet ? wallet.amount : 0;
+            return 0;
         }
     },
 
     created() {
-        this.loadPurchases();
         this.loadPrices();
+        this.loadWallets();
+    },
+
+    watch: {
+        walletOptions: {
+            immediate: true,
+            handler(options) {
+                if (!this.selectedWallet && Array.isArray(options) && options.length > 0) {
+                    this.selectedWallet = options[0].currency;
+                }
+            }
+        }
     },
 
     methods: {
@@ -109,28 +108,37 @@ const app = Vue.createApp({
 
         formatDateForApi(date) {
             const pad = (num) => String(num).padStart(2, "0");
-
             return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
         },
 
-        loadPurchases() {
+        loadWallets() {
+            console.log("loadWallets() called");
             axios
-                .get("server/api.php?r=purchase")
+                .get("/php/4_3_CryptoApp/server/api.php?r=wallet")
                 .then((res) => {
-                    this.purchases = Array.isArray(res.data) ? res.data : [];
+                    console.log("Wallets loaded:", res.data);
+                    this.walletsData = Array.isArray(res.data) ? res.data : [];
+                    if (!this.selectedWallet && this.walletOptions.length > 0) {
+                        this.selectedWallet = this.walletOptions[0].currency;
+                    }
                 })
-                .catch(() => {
-                    this.purchases = [];
+                .catch((error) => {
+                    console.error("Error loading wallets:", error);
+                    this.walletsData = [];
+                    this.selectedWallet = "";
                 });
         },
 
         loadPrices() {
+            console.log("loadPrices() called");
             axios
                 .get("https://api.bitpanda.com/v1/ticker")
                 .then((res) => {
+                    console.log("Prices loaded:", res.data);
                     this.prices = res.data || {};
                 })
-                .catch(() => {
+                .catch((error) => {
+                    console.error("Error loading prices:", error);
                     this.prices = {};
                 });
         },
@@ -147,14 +155,9 @@ const app = Vue.createApp({
                 currency: this.selectedCurrency
             };
 
-            axios
-                .post("server/api.php?r=purchase", payload)
-                .then(() => {
-                    this.loadPurchases();
-                })
-                .catch(() => {
-                    // Fehler bewusst still halten, UI bleibt bedienbar.
-                });
+            axios.post("/php/4_3_CryptoApp/server/api.php?r=purchase", payload)
+                .then(() => this.loadWallets())
+                .catch((error) => console.error("Error buying currency:", error));
         },
 
         sellCurrency() {
@@ -162,25 +165,16 @@ const app = Vue.createApp({
                 return;
             }
 
-            if (this.amount > this.selectedWalletAmount) {
-                return;
-            }
-
             const payload = {
                 date: this.formatDateForApi(new Date()),
                 amount: this.amount,
                 price: this.selectedPrice,
-                currency: this.selectedCurrency
+                currency: this.selectedWallet || this.selectedCurrency
             };
 
-            axios
-                .post("server/api.php?r=purchase/sell", payload)
-                .then(() => {
-                    this.loadPurchases();
-                })
-                .catch(() => {
-                    // Fehler bewusst still halten, UI bleibt bedienbar.
-                });
+            axios.post("/php/4_3_CryptoApp/server/api.php?r=purchase/sell", payload)
+                .then(() => this.loadWallets())
+                .catch((error) => console.error("Error selling currency:", error));
         }
     }
 });
