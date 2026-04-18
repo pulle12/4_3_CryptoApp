@@ -2,6 +2,7 @@
 
 use server\controllers\PurchaseRESTController;
 use server\controllers\RESTController;
+use server\controllers\WalletRESTController;
 
 require_once('controllers/RESTController.php');
 
@@ -20,6 +21,14 @@ if ($controller == 'purchase') {
     try {
         (new PurchaseRESTController())->handleRequest($arg1,$arg2);
     } catch(Exception $e) {
+        RESTController::responseHelper($e->getMessage(), $e->getCode());
+    }
+} else if ($controller == 'wallet') {
+    require_once('controllers/WalletRESTController.php');
+
+    try {
+        (new WalletRESTController())->handleRequest($arg1, $arg2);
+    } catch (Exception $e) {
         RESTController::responseHelper($e->getMessage(), $e->getCode());
     }
 } else {
