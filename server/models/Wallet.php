@@ -4,6 +4,7 @@ namespace server\models;
 
 use JsonSerializable;
 use PDO;
+require_once "Purchase.php";
 
 require_once 'DatabaseObject.php';
 
@@ -13,6 +14,18 @@ class Wallet implements DatabaseObject, JsonSerializable
     protected $currency;
     protected $id;
     private $errors = [];
+
+    public static function getPurchasesByWallet($id)
+    {
+        $db = Database::connect();
+        $sql = "SELECT * FROM `purchase` JOIN wallet ON purchase.wallet_id=wallet.id WHERE wallet.id=?";
+        $stmt = $db->prepare($sql);
+        $stmt->execute([$id]);
+        $items = $stmt->fetchAll(PDO::FETCH_CLASS, Purchase::class);
+        Database::disconnect();
+
+        return $items;
+    }
 
     public function validate()
     {
