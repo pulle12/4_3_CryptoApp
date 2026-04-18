@@ -30,6 +30,9 @@
                     @update:amount="amount = $event"
                     @buy="buyCurrency"
                     @sell="sellCurrency"
+                    :wallet-options="walletOptions"
+                    :selected-wallet="selectedWallet"
+                    @update:selected-wallet="selectedWallet = $event"
             ></purchase-form>
 
             <wallet-list

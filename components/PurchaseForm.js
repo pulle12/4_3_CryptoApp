@@ -15,9 +15,17 @@ window.PurchaseForm = {
         currentValue: {
             type: Number,
             required: true
+        },
+        walletOptions: {
+            type: Array,
+            required: true
+        },
+        selectedWallet: {
+            type: String,
+            required: true
         }
     },
-    emits: ["update:selected-currency", "update:amount", "buy", "sell"],
+    emits: ["update:selected-currency", "update:amount", "buy", "sell", "update:selected-wallet"],
     methods: {
         formatEUR(value) {
             return `${Number(value).toFixed(2)}\u20AC`;
@@ -47,6 +55,22 @@ window.PurchaseForm = {
                 </option>
             </select>
 
+            <label for="wallet-select">Wallet:</label>
+            <select
+                id="wallet-select"
+                :value="selectedWallet"
+                @change="$emit('update:selected-wallet', $event.target.value)"
+            >
+                <option value="" disabled>Wallet wählen</option>
+                <option
+                    v-for="wallet in walletOptions"
+                    :key="wallet.symbol"
+                    :value="wallet.symbol"
+                >
+                    {{ wallet.symbol }} | {{ Number(wallet.amount).toFixed(3) }} | {{ formatEUR(wallet.value) }}
+                </option>
+            </select>
+
             <label for="amount-input">Menge:</label>
             <input
                 id="amount-input"
@@ -59,8 +83,10 @@ window.PurchaseForm = {
 
             <p class="current-value">Wert: {{ formatEUR(currentValue) }}</p>
 
-            <button class="button" @click="$emit('buy')">Kaufen</button>
-            <button class="button" @click="$emit('sell')">Verkaufen</button>
+            <div class="wallet-actions">
+                <button class="button" @click="$emit('buy')">Kaufen</button>
+                <button class="button" @click="$emit('sell')">Verkaufen</button>
+            </div>
         </div>
     `
 };
