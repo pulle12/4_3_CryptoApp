@@ -32,8 +32,8 @@ window.WalletList = {
             <h2>Wallets: {{ formatEUR(totalValue) }} ({{ formatPercent(totalPercent) }})</h2>
 
             <ul>
-                <li v-for="wallet in wallets" :key="wallet.symbol">
-                    {{ wallet.amount.toFixed(3) }} {{ wallet.symbol }} {{ formatEUR(wallet.value) }} ({{ formatPercent(wallet.percent) }})
+                <li v-for="wallet in wallets" :key="wallet.id">
+                    {{ wallet.name }}: {{ wallet.amount.toFixed(3) }} {{ wallet.symbol }} {{ formatEUR(wallet.value) }} ({{ formatPercent(wallet.percent) }})
                 </li>
             </ul>
         </div>

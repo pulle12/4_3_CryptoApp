@@ -4,9 +4,12 @@ const app = Vue.createApp({
             walletsData: [],
             prices: {},
             selectedCurrency: "ADA",
-            selectedWallet: "",
+            selectedWallet: null,
             amount: 0.02,
-            fallbackCurrencies: ["BTC", "ETH", "XRP", "SOL", "ADA", "DOGE", "BNB"]
+            fallbackCurrencies: ["BTC", "ETH", "XRP", "SOL", "ADA", "DOGE", "BNB"],
+            newWalletName: "",
+            newWalletCurrency: "ADA",
+            formMessage: ""
         };
     },
 
@@ -27,34 +30,30 @@ const app = Vue.createApp({
         },
 
         walletOptions() {
-            return this.walletsData.map((wallet) => {
-                const currency = String(wallet.currency || "").toUpperCase();
-                const currentPrice = this.getTickerPrice(currency);
-                const amount = Number(wallet.amount || 0);
-                const value = amount * currentPrice;
-                return {
-                    id: Number(wallet.id),
-                    symbol: currency,
-                    name: wallet.name || "",
-                    currency: currency,
-                    amount: amount,
-                    value: value
-                };
-            }).filter((wallet) => wallet.currency);
+            return this.walletsData.map((wallet) => ({
+                id: Number(wallet.id),
+                name: String(wallet.name || "").trim(),
+                currency: String(wallet.currency || "").toUpperCase()
+            })).filter((wallet) => wallet.id > 0 && wallet.currency);
         },
 
         wallets() {
-            return this.walletOptions.map((wallet) => {
-                const currentPrice = this.getTickerPrice(wallet.currency);
+            return this.walletsData.map((wallet) => {
+                const symbol = String(wallet.currency || "").toUpperCase();
                 const amount = Number(wallet.amount || 0);
+                const invested = Number(wallet.price || 0);
+                const currentPrice = this.getTickerPrice(symbol);
                 const value = amount * currentPrice;
+                const percent = invested > 0 ? ((value - invested) / invested) * 100 : 0;
+
                 return {
-                    symbol: wallet.currency,
-                    amount: amount,
-                    invested: 0,
-                    value: value,
-                    percent: 0,
-                    name: wallet.name
+                    id: Number(wallet.id),
+                    symbol,
+                    name: wallet.name,
+                    amount,
+                    invested,
+                    value,
+                    percent
                 };
             });
         },
@@ -65,20 +64,47 @@ const app = Vue.createApp({
 
         totalWalletPercent() {
             return 0;
+        },
+
+        selectedWalletCurrency() {
+            const selected = this.walletOptions.find((wallet) => wallet.id === Number(this.selectedWallet));
+            return selected ? selected.currency : "";
+        },
+
+        canSell() {
+            if (!this.selectedWalletCurrency || !this.selectedCurrency) {
+                return false;
+            }
+            return this.selectedWalletCurrency === String(this.selectedCurrency).toUpperCase();
         }
     },
 
     created() {
         this.loadPrices();
         this.loadWallets();
+        this.syncNewWalletCurrency();
     },
 
     watch: {
+        currencyOptions: {
+            immediate: true,
+            handler(options) {
+                if (!Array.isArray(options) || options.length === 0) {
+                    return;
+                }
+
+                const availableSymbols = options.map((option) => option.symbol);
+                if (!availableSymbols.includes(String(this.newWalletCurrency).toUpperCase())) {
+                    this.newWalletCurrency = availableSymbols[0];
+                }
+            }
+        },
         walletOptions: {
             immediate: true,
             handler(options) {
-                if (!this.selectedWallet && Array.isArray(options) && options.length > 0) {
-                    this.selectedWallet = options[0].currency;
+                const selectedExists = options.some((wallet) => wallet.id === Number(this.selectedWallet));
+                if (!selectedExists) {
+                    this.selectedWallet = options.length > 0 ? options[0].id : null;
                 }
             }
         }
@@ -111,21 +137,27 @@ const app = Vue.createApp({
             return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
         },
 
+        syncNewWalletCurrency() {
+            const firstCurrency = this.currencyOptions[0]?.symbol;
+            if (firstCurrency) {
+                this.newWalletCurrency = firstCurrency;
+            }
+        },
+
         loadWallets() {
-            console.log("loadWallets() called");
             axios
                 .get("/php/4_3_CryptoApp/server/api.php?r=wallet")
                 .then((res) => {
-                    console.log("Wallets loaded:", res.data);
                     this.walletsData = Array.isArray(res.data) ? res.data : [];
-                    if (!this.selectedWallet && this.walletOptions.length > 0) {
-                        this.selectedWallet = this.walletOptions[0].currency;
+                    const selectedExists = this.walletOptions.some((wallet) => wallet.id === Number(this.selectedWallet));
+                    if (!selectedExists) {
+                        this.selectedWallet = this.walletOptions.length > 0 ? this.walletOptions[0].id : null;
                     }
                 })
                 .catch((error) => {
                     console.error("Error loading wallets:", error);
                     this.walletsData = [];
-                    this.selectedWallet = "";
+                    this.selectedWallet = null;
                 });
         },
 
@@ -144,7 +176,18 @@ const app = Vue.createApp({
         },
 
         buyCurrency() {
+            if (!this.selectedWalletCurrency || !this.selectedWallet) {
+                this.formMessage = "Bitte zuerst eine Wallet waehlen.";
+                return;
+            }
+
+            if (String(this.selectedWalletCurrency).toUpperCase() !== String(this.selectedCurrency).toUpperCase()) {
+                this.formMessage = "Wallet und Kryptowaehrung müssen übereinstimmen.";
+                return;
+            }
+
             if (this.amount <= 0 || this.selectedPrice <= 0) {
+                this.formMessage = "Ungueltige Kaufdaten.";
                 return;
             }
 
@@ -152,16 +195,29 @@ const app = Vue.createApp({
                 date: this.formatDateForApi(new Date()),
                 amount: this.amount,
                 price: this.selectedPrice,
-                currency: this.selectedCurrency
+                currency: this.selectedCurrency,
+                wallet_id: Number(this.selectedWallet)
             };
 
             axios.post("/php/4_3_CryptoApp/server/api.php?r=purchase", payload)
-                .then(() => this.loadWallets())
-                .catch((error) => console.error("Error buying currency:", error));
+                .then(() => {
+                    this.formMessage = "Kauf gespeichert.";
+                    this.loadWallets();
+                })
+                .catch((error) => {
+                    this.formMessage = "Fehler beim Kaufen.";
+                    console.error("Error buying currency:", error);
+                });
         },
 
         sellCurrency() {
+            if (!this.canSell) {
+                this.formMessage = "Verkauf nur moeglich, wenn Wallet und Kryptowaehrung identisch sind.";
+                return;
+            }
+
             if (this.amount <= 0 || this.selectedPrice <= 0) {
+                this.formMessage = "Ungueltige Verkaufsdaten.";
                 return;
             }
 
@@ -169,12 +225,48 @@ const app = Vue.createApp({
                 date: this.formatDateForApi(new Date()),
                 amount: this.amount,
                 price: this.selectedPrice,
-                currency: this.selectedWallet || this.selectedCurrency
+                currency: this.selectedWalletCurrency,
+                wallet_id: Number(this.selectedWallet)
             };
 
             axios.post("/php/4_3_CryptoApp/server/api.php?r=purchase/sell", payload)
-                .then(() => this.loadWallets())
-                .catch((error) => console.error("Error selling currency:", error));
+                .then(() => {
+                    this.formMessage = "Verkauf gespeichert.";
+                    this.loadWallets();
+                })
+                .catch((error) => {
+                    this.formMessage = "Fehler beim Verkaufen.";
+                    console.error("Error selling currency:", error);
+                });
+        },
+
+        createWallet(nameInput = this.newWalletName, currencyInput = this.newWalletCurrency) {
+            const name = String(nameInput || "").trim();
+            const currency = String(currencyInput || "").toUpperCase();
+
+            if (!name || !currency) {
+                this.formMessage = "Wallet-Name und Waehrung sind erforderlich.";
+                return;
+            }
+
+            axios.post("/php/4_3_CryptoApp/server/api.php?r=wallet", { name, currency })
+                .then(() => {
+                    this.formMessage = "Wallet erstellt.";
+                    this.newWalletName = "";
+                    this.newWalletCurrency = currency;
+                    return axios.get("/php/4_3_CryptoApp/server/api.php?r=wallet");
+                })
+                .then((res) => {
+                    this.walletsData = Array.isArray(res.data) ? res.data : [];
+                    const created = this.walletOptions.find((wallet) => wallet.name.toLowerCase() === name.toLowerCase() && wallet.currency === currency);
+                    if (created) {
+                        this.selectedWallet = created.id;
+                    }
+                })
+                .catch((error) => {
+                    this.formMessage = "Fehler beim Erstellen der Wallet.";
+                    console.error("Error creating wallet:", error);
+                });
         }
     }
 });
