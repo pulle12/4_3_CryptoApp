@@ -69,6 +69,7 @@ class PurchaseRESTController extends RESTController
         $model->setAmount($this->getDataOrNull('amount'));
         $model->setPrice($this->getDataOrNull('price'));
         $model->setCurrency($this->getDataOrNull('currency'));
+        $model->setWalletId($this->getDataOrNull('wallet_id'));
         $model->setIsSell($isSell);
 
         if ($model->save()) {
@@ -101,6 +102,7 @@ class PurchaseRESTController extends RESTController
             $model->setAmount($this->getDataOrNull('amount'));
             $model->setPrice($this->getDataOrNull('price'));
             $model->setCurrency($this->getDataOrNull('currency'));
+            $model->setWalletId($this->getDataOrNull('wallet_id'));
 
             if ($model->save()) {
                 $this->response("OK");

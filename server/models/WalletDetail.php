@@ -18,7 +18,7 @@ class WalletDetail extends Wallet
                        COALESCE(SUM(p.amount), 0) AS amount,
                        COALESCE(SUM(p.amount * p.price), 0) AS price
                 FROM wallet w
-                LEFT JOIN purchase p ON CAST(p.currency AS CHAR) = CAST(w.currency AS CHAR) COLLATE utf8mb4_unicode_ci
+                LEFT JOIN purchase p ON p.wallet_id = w.id
                 GROUP BY w.id, w.name, w.currency
                 ORDER BY w.name ASC";
         $stmt = $db->prepare($sql);
@@ -36,7 +36,7 @@ class WalletDetail extends Wallet
                        COALESCE(SUM(p.amount), 0) AS amount,
                        COALESCE(SUM(p.amount * p.price), 0) AS price
                 FROM wallet w
-                LEFT JOIN purchase p ON CAST(p.currency AS CHAR) = CAST(w.currency AS CHAR) COLLATE utf8mb4_unicode_ci
+                LEFT JOIN purchase p ON p.wallet_id = w.id
                 WHERE w.id = ?
                 GROUP BY w.id, w.name, w.currency";
         $stmt = $db->prepare($sql);

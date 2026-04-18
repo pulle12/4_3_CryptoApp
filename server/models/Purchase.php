@@ -14,13 +14,14 @@ class Purchase implements DatabaseObject, JsonSerializable
     private $currency;
     private $amount;
     private $price;
+    private $wallet_id;
     private $isSell = false;
 
     private $errors = [];
 
     public function validate()
     {
-        return $this->validateDate() & $this->validateAmount() & $this->validatePrice() & $this->validateCurrency();
+        return $this->validateDate() & $this->validateAmount() & $this->validatePrice() & $this->validateCurrency() & $this->validateWalletId();
     }
 
     /**
@@ -49,9 +50,9 @@ class Purchase implements DatabaseObject, JsonSerializable
     public function create()
     {
         $db = Database::connect();
-        $sql = "INSERT INTO purchase (date, amount, price, currency) values(?, ?, ?, ?)";
+        $sql = "INSERT INTO purchase (date, amount, price, currency, wallet_id) values(?, ?, ?, ?, ?)";
         $stmt = $db->prepare($sql);
-        $stmt->execute(array($this->date, $this->amount, $this->price, $this->currency));
+        $stmt->execute(array($this->date, $this->amount, $this->price, $this->currency, $this->wallet_id));
         $lastId = $db->lastInsertId();
         Database::disconnect();
         return $lastId;
@@ -63,9 +64,9 @@ class Purchase implements DatabaseObject, JsonSerializable
     public function update()
     {
         $db = Database::connect();
-        $sql = "UPDATE purchase set date = ?, amount = ?, price = ?, currency = ? WHERE id = ?";
+        $sql = "UPDATE purchase set date = ?, amount = ?, price = ?, currency = ?, wallet_id = ? WHERE id = ?";
         $stmt = $db->prepare($sql);
-        $stmt->execute(array($this->date, $this->amount, $this->price, $this->currency, $this->id));
+        $stmt->execute(array($this->date, $this->amount, $this->price, $this->currency, $this->wallet_id, $this->id));
         Database::disconnect();
     }
 
@@ -208,6 +209,19 @@ class Purchase implements DatabaseObject, JsonSerializable
         }
     }
 
+    private function validateWalletId()
+    {
+        if (!is_numeric($this->wallet_id) || (int)$this->wallet_id <= 0) {
+            $this->errors['wallet_id'] = "Wallet ungueltig";
+            return false;
+        }
+
+        $this->wallet_id = (int)$this->wallet_id;
+        unset($this->errors['wallet_id']);
+
+        return true;
+    }
+
     /**
      * define attributes which are part of the json output
      * @return array
@@ -220,6 +234,7 @@ class Purchase implements DatabaseObject, JsonSerializable
             "currency" => $this->currency,
             "amount" => doubleval($this->amount),
             "price" => doubleval($this->price),
+            "wallet_id" => intval($this->wallet_id),
         ];
     }
 
@@ -306,6 +321,16 @@ class Purchase implements DatabaseObject, JsonSerializable
     public function setPrice($price)
     {
         $this->price = $price;
+    }
+
+    public function getWalletId()
+    {
+        return $this->wallet_id;
+    }
+
+    public function setWalletId($wallet_id)
+    {
+        $this->wallet_id = $wallet_id;
     }
 
     /**
