@@ -34,8 +34,10 @@ window.WalletList = {
 
             <ul>
                 <li v-for="wallet in wallets" :key="wallet.id">
-                    {{ wallet.name }}: {{ wallet.amount.toFixed(3) }} {{ wallet.symbol }} {{ formatEUR(wallet.value) }} ({{ formatPercent(wallet.percent) }})
-                    <button class="button" @click="$emit('remove', wallet.id)">Entfernen</button>
+                    <span class="wallet-row-text">
+                        {{ wallet.name }}: {{ wallet.amount.toFixed(3) }} {{ wallet.symbol }} {{ formatEUR(wallet.value) }} ({{ formatPercent(wallet.percent) }})
+                    </span>
+                    <button class="button wallet-remove-button" @click="$emit('remove', wallet.id)">Entfernen</button>
                 </li>
             </ul>
         </div>

@@ -102,8 +102,26 @@ select {
 }
 
 .wallet-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
   font-size: 28px;
   margin-bottom: 24px;
+}
+
+.wallet-list .wallet-row-text {
+  flex: 1;
+}
+
+.wallet-list .wallet-remove-button {
+  margin: 0 0 0 auto;
+  width: auto;
+  min-width: 92px;
+  height: 38px;
+  padding: 0 12px;
+  font-size: 16px;
+  white-space: nowrap;
 }
 
 @media (max-width: 1280px) {
@@ -157,6 +175,13 @@ select {
   .button {
     height: 58px;
     width: 150px;
+  }
+
+  .wallet-list .wallet-remove-button {
+    height: 34px;
+    min-width: 84px;
+    font-size: 14px;
+    width: auto;
   }
 }
 
