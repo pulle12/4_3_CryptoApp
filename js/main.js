@@ -234,7 +234,7 @@ const app = Vue.createApp({
 
         buyCurrency() {
             if (!this.selectedWalletCurrency || !this.selectedWallet) {
-                this.formMessage = "Bitte zuerst eine Wallet waehlen.";
+                this.formMessage = "Bitte zuerst eine Wallet wählen.";
                 return;
             }
 
@@ -244,7 +244,7 @@ const app = Vue.createApp({
             }
 
             if (this.amount <= 0 || this.selectedPrice <= 0) {
-                this.formMessage = "Ungueltige Kaufdaten.";
+                this.formMessage = "Ungültige Kaufdaten.";
                 return;
             }
 
@@ -275,7 +275,7 @@ const app = Vue.createApp({
             }
 
             if (this.amount <= 0 || this.selectedPrice <= 0) {
-                this.formMessage = "Ungueltige Verkaufsdaten.";
+                this.formMessage = "Ungültige Verkaufsdaten.";
                 return;
             }
 
@@ -304,7 +304,7 @@ const app = Vue.createApp({
             const currency = String(currencyInput || "").toUpperCase();
 
             if (!name || !currency) {
-                this.formMessage = "Wallet-Name und Waehrung sind erforderlich.";
+                this.formMessage = "Wallet-Name und -Währung sind erforderlich.";
                 return;
             }
 
@@ -331,7 +331,7 @@ const app = Vue.createApp({
         removeWallet(walletId) {
             const id = Number(walletId);
             if (!Number.isFinite(id) || id <= 0) {
-                this.formMessage = "Ungueltige Wallet-ID.";
+                this.formMessage = "Ungültige Wallet-ID.";
                 return;
             }
 
