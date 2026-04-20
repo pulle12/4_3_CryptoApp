@@ -46,6 +46,26 @@ body {
   margin: 30px auto 0;
 }
 
+.wallet-create-section {
+  display: flex;
+  justify-content: center;
+  max-width: 1240px;
+  margin: 28px auto 0;
+}
+
+.wallet-create-form {
+  margin: 0 auto;
+  max-width: 540px;
+  min-width: 360px;
+  padding: 28px 24px;
+  border: 2px solid #d8d8d8;
+  background-color: #ffffff;
+}
+
+.wallet-create-form .button {
+  margin-top: 20px;
+}
+
 .wallet-form,
 .wallet-list {
   display: flex;
@@ -205,6 +225,13 @@ select {
 
   .wallet-detail-section {
     margin-top: 22px;
+  }
+
+  .wallet-create-form {
+    width: 100%;
+    max-width: 680px;
+    min-width: 0;
+    margin: 0 auto;
   }
 
   .wallet-purchase-list {

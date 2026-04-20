@@ -28,18 +28,13 @@
                     :current-value="currentValue"
                     :wallet-options="walletOptions"
                     :selected-wallet="selectedWallet"
-                    :new-wallet-name="newWalletName"
-                    :new-wallet-currency="newWalletCurrency"
                     :can-sell="canSell"
                     :form-message="formMessage"
                     @update:selected-currency="selectedCurrency = $event"
                     @update:amount="amount = $event"
                     @update:selected-wallet="selectedWallet = $event"
-                    @update:new-wallet-name="newWalletName = $event"
-                    @update:new-wallet-currency="newWalletCurrency = $event"
                     @buy="buyCurrency"
                     @sell="sellCurrency"
-                    @create-wallet="createWallet"
             ></purchase-form>
 
             <wallet-list
@@ -48,6 +43,17 @@
                     :total-percent="totalWalletPercent"
                     @remove="removeWallet"
             ></wallet-list>
+        </div>
+
+        <div class="wallet-create-section">
+            <wallet-create-form
+                    :currency-options="currencyOptions"
+                    :new-wallet-name="newWalletName"
+                    :new-wallet-currency="newWalletCurrency"
+                    @update:new-wallet-name="newWalletName = $event"
+                    @update:new-wallet-currency="newWalletCurrency = $event"
+                    @create-wallet="createWallet"
+            ></wallet-create-form>
         </div>
 
         <div class="wallet-detail-section">
@@ -61,6 +67,7 @@
 </div>
 
 <script src="components/AppDisplay.js"></script>
+<script src="components/WalletCreateForm.js"></script>
 <script src="components/PurchaseForm.js"></script>
 <script src="components/WalletList.js"></script>
 <script src="components/WalletPurchaseList.js"></script>

@@ -357,6 +357,7 @@ const app = Vue.createApp({
 });
 
 app.component("app-display", window.AppDisplay);
+app.component("wallet-create-form", window.WalletCreateForm);
 app.component("purchase-form", window.PurchaseForm);
 app.component("wallet-list", window.WalletList);
 app.component("wallet-purchase-list", window.WalletPurchaseList);
