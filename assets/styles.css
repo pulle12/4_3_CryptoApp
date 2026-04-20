@@ -41,6 +41,11 @@ body {
   margin: 0 auto;
 }
 
+.wallet-detail-section {
+  max-width: 1240px;
+  margin: 30px auto 0;
+}
+
 .wallet-form,
 .wallet-list {
   display: flex;
@@ -52,6 +57,50 @@ body {
   border: 2px solid #d8d8d8;
   background-color: #ffffff;
   min-height: 500px;
+}
+
+.wallet-purchase-list {
+  border: 2px solid #d8d8d8;
+  background-color: #ffffff;
+  padding: 30px 24px;
+}
+
+.wallet-empty-state {
+  font-size: 22px;
+  margin: 8px 0 0;
+}
+
+.wallet-purchase-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 12px;
+  font-size: 18px;
+}
+
+.wallet-purchase-table th,
+.wallet-purchase-table td {
+  border-bottom: 1px solid #e5e7ea;
+  padding: 10px 8px;
+  text-align: left;
+}
+
+.wallet-purchase-table th {
+  font-size: 16px;
+  color: #3d4752;
+}
+
+.wallet-purchase-profit {
+  color: #1f8a42;
+  font-weight: 700;
+}
+
+.wallet-purchase-loss {
+  color: #b33434;
+  font-weight: 700;
+}
+
+.wallet-purchase-neutral {
+  color: #3d4752;
 }
 
 h2 {
@@ -152,6 +201,22 @@ select {
   .wallet-list {
     width: 100%;
     max-width: 680px;
+  }
+
+  .wallet-detail-section {
+    margin-top: 22px;
+  }
+
+  .wallet-purchase-list {
+    width: 100%;
+    max-width: 680px;
+    margin: 0 auto;
+    overflow-x: auto;
+  }
+
+  .wallet-purchase-table {
+    min-width: 760px;
+    font-size: 16px;
   }
 
   h2 {

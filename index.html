@@ -49,12 +49,21 @@
                     @remove="removeWallet"
             ></wallet-list>
         </div>
+
+        <div class="wallet-detail-section">
+            <wallet-purchase-list
+                    :wallet-name="selectedWalletName"
+                    :wallet-symbol="selectedWalletCurrency"
+                    :purchases="selectedWalletPurchases"
+            ></wallet-purchase-list>
+        </div>
     </div>
 </div>
 
 <script src="components/AppDisplay.js"></script>
 <script src="components/PurchaseForm.js"></script>
 <script src="components/WalletList.js"></script>
+<script src="components/WalletPurchaseList.js"></script>
 <script src="js/main.js"></script>
 
 </body>
