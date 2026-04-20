@@ -25,14 +25,6 @@ window.PurchaseForm = {
             required: false,
             default: null
         },
-        newWalletName: {
-            type: String,
-            required: true
-        },
-        newWalletCurrency: {
-            type: String,
-            required: true
-        },
         canSell: {
             type: Boolean,
             required: true
@@ -47,10 +39,7 @@ window.PurchaseForm = {
         "update:amount",
         "buy",
         "sell",
-        "update:selected-wallet",
-        "update:new-wallet-name",
-        "update:new-wallet-currency",
-        "create-wallet"
+        "update:selected-wallet"
     ],
     methods: {
         formatEUR(value) {
@@ -116,29 +105,6 @@ window.PurchaseForm = {
 
             <p v-if="!canSell" class="current-value">Verkauf nur bei gleicher Wallet/Coin-Auswahl moeglich.</p>
             <p v-if="formMessage" class="current-value">{{ formMessage }}</p>
-
-            <hr />
-            <h3>Neues Wallet erstellen</h3>
-            <label for="wallet-name-input">Name:</label>
-            <input
-                id="wallet-name-input"
-                type="text"
-                :value="newWalletName"
-                @input="$emit('update:new-wallet-name', $event.target.value)"
-            />
-
-            <label for="wallet-currency-select">Währung:</label>
-            <select
-                id="wallet-currency-select"
-                :value="newWalletCurrency"
-                @change="$emit('update:new-wallet-currency', $event.target.value)"
-            >
-                <option v-for="currency in currencyOptions" :key="'new-' + currency.symbol" :value="currency.symbol">
-                    {{ currency.symbol }}
-                </option>
-            </select>
-
-            <button class="button" @click="$emit('create-wallet', newWalletName, newWalletCurrency)">Wallet erstellen</button>
         </div>
     `
 };
