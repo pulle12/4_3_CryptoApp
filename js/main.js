@@ -182,7 +182,7 @@ const app = Vue.createApp({
             }
 
             if (String(this.selectedWalletCurrency).toUpperCase() !== String(this.selectedCurrency).toUpperCase()) {
-                this.formMessage = "Wallet und Kryptowaehrung müssen übereinstimmen.";
+                this.formMessage = "Wallet und Kryptowährung müssen übereinstimmen.";
                 return;
             }
 
@@ -212,7 +212,7 @@ const app = Vue.createApp({
 
         sellCurrency() {
             if (!this.canSell) {
-                this.formMessage = "Verkauf nur moeglich, wenn Wallet und Kryptowaehrung identisch sind.";
+                this.formMessage = "Verkauf nur möglich, wenn Wallet und Kryptowährung identisch sind.";
                 return;
             }
 
@@ -266,6 +266,31 @@ const app = Vue.createApp({
                 .catch((error) => {
                     this.formMessage = "Fehler beim Erstellen der Wallet.";
                     console.error("Error creating wallet:", error);
+                });
+        },
+
+        removeWallet(walletId) {
+            const id = Number(walletId);
+            if (!Number.isFinite(id) || id <= 0) {
+                this.formMessage = "Ungueltige Wallet-ID.";
+                return;
+            }
+
+            axios.delete(`/php/4_3_CryptoApp/server/api.php?r=wallet/${id}`)
+                .then(() => {
+                    this.formMessage = "Wallet entfernt.";
+                    return axios.get("/php/4_3_CryptoApp/server/api.php?r=wallet");
+                })
+                .then((res) => {
+                    this.walletsData = Array.isArray(res.data) ? res.data : [];
+                    const selectedExists = this.walletOptions.some((wallet) => wallet.id === Number(this.selectedWallet));
+                    if (!selectedExists) {
+                        this.selectedWallet = this.walletOptions.length > 0 ? this.walletOptions[0].id : null;
+                    }
+                })
+                .catch((error) => {
+                    this.formMessage = "Fehler beim Entfernen der Wallet.";
+                    console.error("Error removing wallet:", error);
                 });
         }
     }
