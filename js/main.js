@@ -2,6 +2,7 @@ const app = Vue.createApp({
     data() {
         return {
             walletsData: [],
+            walletPurchasesData: [],
             prices: {},
             selectedCurrency: "ADA",
             selectedWallet: null,
@@ -71,6 +72,37 @@ const app = Vue.createApp({
             return selected ? selected.currency : "";
         },
 
+        selectedWalletName() {
+            const selected = this.walletOptions.find((wallet) => wallet.id === Number(this.selectedWallet));
+            return selected ? selected.name : "";
+        },
+
+        selectedWalletPurchases() {
+            return this.walletPurchasesData.map((purchase) => {
+                const amount = Number(purchase.amount || 0);
+                const price = Number(purchase.price || 0);
+                const currency = String(purchase.currency || "").toUpperCase();
+                const currentPrice = this.getTickerPrice(currency);
+                const invested = amount * price;
+                const currentValue = amount * currentPrice;
+                const gainValue = currentValue - invested;
+                const gainPercent = invested !== 0 ? (gainValue / Math.abs(invested)) * 100 : 0;
+
+                return {
+                    id: Number(purchase.id),
+                    date: String(purchase.date || ""),
+                    currency,
+                    amount,
+                    price,
+                    invested,
+                    currentPrice,
+                    currentValue,
+                    gainValue,
+                    gainPercent
+                };
+            });
+        },
+
         canSell() {
             if (!this.selectedWalletCurrency || !this.selectedCurrency) {
                 return false;
@@ -106,6 +138,12 @@ const app = Vue.createApp({
                 if (!selectedExists) {
                     this.selectedWallet = options.length > 0 ? options[0].id : null;
                 }
+            }
+        },
+        selectedWallet: {
+            immediate: true,
+            handler() {
+                this.loadWalletPurchases();
             }
         }
     },
@@ -161,6 +199,25 @@ const app = Vue.createApp({
                 });
         },
 
+        loadWalletPurchases() {
+            const walletId = Number(this.selectedWallet);
+
+            if (!Number.isFinite(walletId) || walletId <= 0) {
+                this.walletPurchasesData = [];
+                return;
+            }
+
+            axios
+                .get(`/php/4_3_CryptoApp/server/api.php?r=wallet/purchase/${walletId}`)
+                .then((res) => {
+                    this.walletPurchasesData = Array.isArray(res.data) ? res.data : [];
+                })
+                .catch((error) => {
+                    console.error("Error loading wallet purchases:", error);
+                    this.walletPurchasesData = [];
+                });
+        },
+
         loadPrices() {
             console.log("loadPrices() called");
             axios
@@ -203,6 +260,7 @@ const app = Vue.createApp({
                 .then(() => {
                     this.formMessage = "Kauf gespeichert.";
                     this.loadWallets();
+                    this.loadWalletPurchases();
                 })
                 .catch((error) => {
                     this.formMessage = "Fehler beim Kaufen.";
@@ -233,6 +291,7 @@ const app = Vue.createApp({
                 .then(() => {
                     this.formMessage = "Verkauf gespeichert.";
                     this.loadWallets();
+                    this.loadWalletPurchases();
                 })
                 .catch((error) => {
                     this.formMessage = "Fehler beim Verkaufen.";
@@ -287,6 +346,7 @@ const app = Vue.createApp({
                     if (!selectedExists) {
                         this.selectedWallet = this.walletOptions.length > 0 ? this.walletOptions[0].id : null;
                     }
+                    this.loadWalletPurchases();
                 })
                 .catch((error) => {
                     this.formMessage = "Fehler beim Entfernen der Wallet.";
@@ -299,5 +359,6 @@ const app = Vue.createApp({
 app.component("app-display", window.AppDisplay);
 app.component("purchase-form", window.PurchaseForm);
 app.component("wallet-list", window.WalletList);
+app.component("wallet-purchase-list", window.WalletPurchaseList);
 
 app.mount("#app");
