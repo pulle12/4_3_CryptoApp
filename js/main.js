@@ -223,11 +223,21 @@ const app = Vue.createApp({
             axios
                 .get("https://api.bitpanda.com/v1/ticker")
                 .then((res) => {
-                    console.log("Prices loaded:", res.data);
-                    this.prices = res.data || {};
+                    const data = res.data;
+
+                    if (!data || typeof data !== "object" || Array.isArray(data)) {
+                        throw new Error("Unerwartete Antwort beim Laden der Kurse.");
+                    }
+
+                    console.log("Prices loaded:", data);
+                    this.prices = data;
                 })
                 .catch((error) => {
                     console.error("Error loading prices:", error);
+                    const appRoot = document.getElementById("app");
+                    if (appRoot && !appRoot.querySelector(".error-message")) {
+                        appRoot.insertAdjacentHTML("afterbegin", '<div class="error-message" role="alert">Fehler beim Laden der Kurse. Bitte Seite neu laden bzw. Internetverbindung überprüfen.</div>');
+                    }
                     this.prices = {};
                 });
         },
