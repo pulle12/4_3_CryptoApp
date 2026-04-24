@@ -103,7 +103,7 @@ window.PurchaseForm = {
                 <button class="button" :disabled="!canSell" @click="$emit('sell')">Verkaufen</button>
             </div>
 
-            <p v-if="!canSell" class="current-value">Verkauf nur bei gleicher Wallet/Coin-Auswahl moeglich.</p>
+            <p v-if="!canSell" class="current-value">Verkauf nur bei gleicher Wallet/Coin-Auswahl möglich.</p>
             <p v-if="formMessage" class="current-value">{{ formMessage }}</p>
         </div>
     `
