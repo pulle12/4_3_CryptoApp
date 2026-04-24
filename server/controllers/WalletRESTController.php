@@ -39,13 +39,18 @@ class WalletRESTController extends RESTController
             return;
         }
 
-        if ($arg1 === 'purchase' && $arg2 !== null) {
-            $this->response(Wallet::getPurchasesByWallet($arg2));
+        if (ctype_digit((string)$arg1) && $arg2 === 'purchase') {
+            $this->response(Wallet::getPurchasesByWallet((int)$arg1));
+            return;
+        }
+
+        if ($arg1 === 'purchase' && ctype_digit((string)$arg2)) {
+            $this->response(Wallet::getPurchasesByWallet((int)$arg2));
             return;
         }
 
         if (ctype_digit((string)$arg1)) {
-            $wallet = Wallet::get((int)$arg1);
+            $wallet = WalletDetail::get((int)$arg1);
             if ($wallet === null) {
                 $this->response('Not Found', 404);
                 return;

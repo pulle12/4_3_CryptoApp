@@ -208,7 +208,7 @@ const app = Vue.createApp({
             }
 
             axios
-                .get(`/php/4_3_CryptoApp/server/api.php?r=wallet/purchase/${walletId}`)
+                .get(`/php/4_3_CryptoApp/server/api.php?r=wallet/${walletId}/purchase`)
                 .then((res) => {
                     this.walletPurchasesData = Array.isArray(res.data) ? res.data : [];
                 })

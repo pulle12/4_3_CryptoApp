@@ -3,9 +3,11 @@
 namespace server\controllers;
 
 use server\models\Purchase;
+use server\models\Wallet;
 
 require_once('RESTController.php');
 require_once('models/Purchase.php');
+require_once('models/Wallet.php');
 
 class PurchaseRESTController extends RESTController
 {
@@ -54,7 +56,13 @@ class PurchaseRESTController extends RESTController
             return;
         }
 
-        $this->response($model);
+        $purchaseData = $model->jsonSerialize();
+        $wallet = Wallet::get((int)$model->getWalletId());
+        if ($wallet !== null) {
+            $purchaseData['wallet'] = $wallet;
+        }
+
+        $this->response($purchaseData);
     }
 
     /**
