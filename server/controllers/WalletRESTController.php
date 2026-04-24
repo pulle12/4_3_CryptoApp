@@ -11,6 +11,17 @@ require_once('models/WalletDetail.php');
 
 class WalletRESTController extends RESTController
 {
+    private function respondWalletPurchasesOr404(int $walletId): void
+    {
+        $wallet = Wallet::get($walletId);
+        if ($wallet === null) {
+            $this->response('Not Found', 404);
+            return;
+        }
+
+        $this->response(Wallet::getPurchasesByWallet($walletId));
+    }
+
     public function handleRequest($arg1 = null, $arg2 = null)
     {
         switch ($this->method) {
@@ -40,12 +51,12 @@ class WalletRESTController extends RESTController
         }
 
         if (ctype_digit((string)$arg1) && $arg2 === 'purchase') {
-            $this->response(Wallet::getPurchasesByWallet((int)$arg1));
+            $this->respondWalletPurchasesOr404((int)$arg1);
             return;
         }
 
         if ($arg1 === 'purchase' && ctype_digit((string)$arg2)) {
-            $this->response(Wallet::getPurchasesByWallet((int)$arg2));
+            $this->respondWalletPurchasesOr404((int)$arg2);
             return;
         }
 
