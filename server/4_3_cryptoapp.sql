@@ -110,13 +110,17 @@ INSERT INTO `wallet` (`id`, `name`, `currency`) VALUES
 -- Indizes für die Tabelle `purchase`
 --
 ALTER TABLE `purchase`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_purchase_wallet_id` (`wallet_id`),
+  ADD KEY `idx_purchase_currency` (`currency`),
+  ADD KEY `idx_purchase_date` (`date`);
 
 --
 -- Indizes für die Tabelle `wallet`
 --
 ALTER TABLE `wallet`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_wallet_currency` (`currency`);
 
 --
 -- AUTO_INCREMENT für exportierte Tabellen
@@ -133,6 +137,63 @@ ALTER TABLE `purchase`
 --
 ALTER TABLE `wallet`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+-- --------------------------------------------------------
+--
+-- Datenbereinigung und Integritaetsregeln
+--
+
+UPDATE `wallet`
+SET
+  `name` = TRIM(`name`),
+  `currency` = UPPER(TRIM(`currency`));
+
+UPDATE `purchase`
+SET `currency` = UPPER(TRIM(`currency`));
+
+INSERT INTO `wallet` (`name`, `currency`)
+SELECT CONCAT('Auto-', src.`currency`, '-Wallet'), src.`currency`
+FROM (
+  SELECT DISTINCT UPPER(TRIM(`currency`)) AS `currency`
+  FROM `purchase`
+) AS src
+LEFT JOIN `wallet` w
+  ON UPPER(TRIM(w.`currency`)) = src.`currency`
+WHERE w.`id` IS NULL;
+
+UPDATE `purchase` p
+JOIN (
+  SELECT UPPER(TRIM(`currency`)) AS `currency`, MIN(`id`) AS `wallet_id`
+  FROM `wallet`
+  GROUP BY UPPER(TRIM(`currency`))
+) wm
+  ON UPPER(TRIM(p.`currency`)) = wm.`currency`
+SET p.`wallet_id` = wm.`wallet_id`
+WHERE p.`wallet_id` IS NULL
+   OR p.`wallet_id` = 0
+   OR NOT EXISTS (
+     SELECT 1
+     FROM `wallet` w2
+     WHERE w2.`id` = p.`wallet_id`
+   );
+
+ALTER TABLE `purchase`
+  MODIFY `currency` varchar(32) NOT NULL;
+
+ALTER TABLE `purchase`
+  ADD CONSTRAINT `chk_purchase_amount_nonzero` CHECK (`amount` <> 0),
+  ADD CONSTRAINT `chk_purchase_price_positive` CHECK (`price` > 0),
+  ADD CONSTRAINT `chk_purchase_currency_not_empty` CHECK (CHAR_LENGTH(TRIM(`currency`)) > 0);
+
+ALTER TABLE `wallet`
+  ADD CONSTRAINT `chk_wallet_name_not_empty` CHECK (CHAR_LENGTH(TRIM(`name`)) > 0),
+  ADD CONSTRAINT `chk_wallet_currency_not_empty` CHECK (CHAR_LENGTH(TRIM(`currency`)) > 0);
+
+ALTER TABLE `purchase`
+  ADD CONSTRAINT `fk_purchase_wallet`
+  FOREIGN KEY (`wallet_id`) REFERENCES `wallet`(`id`)
+  ON UPDATE CASCADE
+  ON DELETE RESTRICT;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
