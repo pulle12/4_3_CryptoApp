@@ -91,7 +91,7 @@ window.PurchaseForm = {
                 id="amount-input"
                 type="number"
                 min="0"
-                step="0.001"
+                step="0.00005"
                 :value="amount"
                 @input="$emit('update:amount', parseAmountInput($event.target.value))"
             />
