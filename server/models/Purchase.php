@@ -16,12 +16,18 @@ class Purchase implements DatabaseObject, JsonSerializable
     private $price;
     private $wallet_id;
     private $isSell = false;
+    private $walletCurrency = null;
 
     private $errors = [];
 
     public function validate()
     {
-        return $this->validateDate() & $this->validateAmount() & $this->validatePrice() & $this->validateCurrency() & $this->validateWalletId();
+        return $this->validateDate()
+            & $this->validateAmount()
+            & $this->validatePrice()
+            & $this->validateWalletId()
+            & $this->validateCurrency()
+            & $this->validateSellBalance();
     }
 
     /**
@@ -197,16 +203,25 @@ class Purchase implements DatabaseObject, JsonSerializable
 
     private function validateCurrency()
     {
-        if (strlen($this->currency) == 0) {
+        $currency = strtoupper(trim((string)$this->currency));
+
+        if ($currency === '') {
             $this->errors['currency'] = "Waehrung ungueltig";
             return false;
-        } else if (strlen($this->currency) > 32) {
+        } else if (strlen($currency) > 32) {
             $this->errors['currency'] = "Waehrung zu lang (max. 32 Zeichen)";
             return false;
-        } else {
-            unset($this->errors['currency']);
-            return true;
         }
+
+        $this->currency = $currency;
+
+        if ($this->walletCurrency !== null && strtoupper((string)$this->walletCurrency) !== $currency) {
+            $this->errors['currency'] = "Waehrung passt nicht zur Wallet";
+            return false;
+        }
+
+        unset($this->errors['currency']);
+        return true;
     }
 
     private function validateWalletId()
@@ -217,8 +232,59 @@ class Purchase implements DatabaseObject, JsonSerializable
         }
 
         $this->wallet_id = (int)$this->wallet_id;
+
+        $db = Database::connect();
+        $sql = "SELECT currency FROM wallet WHERE id = ?";
+        $stmt = $db->prepare($sql);
+        $stmt->execute([$this->wallet_id]);
+        $wallet = $stmt->fetch(PDO::FETCH_ASSOC);
+        Database::disconnect();
+
+        if ($wallet === false) {
+            $this->errors['wallet_id'] = "Wallet nicht gefunden";
+            return false;
+        }
+
+        $this->walletCurrency = strtoupper(trim((string)$wallet['currency']));
         unset($this->errors['wallet_id']);
 
+        return true;
+    }
+
+    private function validateSellBalance()
+    {
+        if (!$this->isSell) {
+            unset($this->errors['amount']);
+            return true;
+        }
+
+        if (!is_numeric($this->wallet_id) || !is_numeric($this->amount) || trim((string)$this->currency) === '') {
+            return false;
+        }
+
+        $db = Database::connect();
+        if ($this->id != null && (int)$this->id > 0) {
+            $sql = "SELECT COALESCE(SUM(amount), 0) AS balance FROM purchase WHERE wallet_id = ? AND UPPER(currency) = UPPER(?) AND id <> ?";
+            $stmt = $db->prepare($sql);
+            $stmt->execute([(int)$this->wallet_id, (string)$this->currency, (int)$this->id]);
+        } else {
+            $sql = "SELECT COALESCE(SUM(amount), 0) AS balance FROM purchase WHERE wallet_id = ? AND UPPER(currency) = UPPER(?)";
+            $stmt = $db->prepare($sql);
+            $stmt->execute([(int)$this->wallet_id, (string)$this->currency]);
+        }
+
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        Database::disconnect();
+
+        $balance = $row ? (double)$row['balance'] : 0.0;
+        $resultingBalance = $balance + (double)$this->amount;
+
+        if ($resultingBalance < -0.00000001) {
+            $this->errors['amount'] = "Nicht genug Bestand fuer Verkauf";
+            return false;
+        }
+
+        unset($this->errors['amount']);
         return true;
     }
 
